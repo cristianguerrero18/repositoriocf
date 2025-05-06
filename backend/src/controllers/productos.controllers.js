@@ -62,8 +62,52 @@ const deleteProducto = async (req, res) => {
   }
 }
 
+const putProducto = async (req, res) => {
+  try {
+      const { id } = req.params;
+      const {
+          nombre,
+          marca,
+          modelo,
+          descripcion,
+          precio_unitario,
+          stock,
+          imagen,
+          fecha_Creacion
+      } = req.body;
+
+      const producto = {
+          nombre,
+          marca,
+          modelo,
+          descripcion,
+          precio_unitario,
+          stock,
+          imagen,
+          fecha_Creacion
+      };
+
+      const connection = await getConnection();
+      const result = await connection.query(
+          "UPDATE productos SET ? WHERE id_producto = ?",
+          [producto, id]
+      );
+
+      if (result.affectedRows > 0) {
+          res.json({ message: "Producto actualizado correctamente" });
+      } else {
+          res.status(404).json({ message: "Producto no encontrado" });
+      }
+  } catch (error) {
+      console.error("Error al actualizar producto:", error);
+      res.status(500).json({ message: "Error al actualizar producto" });
+  }
+};
+
+
 export const methodHTTP = {
   getProductos,
   postProducto,
-  deleteProducto
+  deleteProducto,
+  putProducto
 }

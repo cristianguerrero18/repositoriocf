@@ -7,13 +7,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const clientOption = document.getElementById('client-option');
     const clientForm = document.getElementById('client-form');
     const registerForm = document.getElementById('register-form');
+    const adminForm = document.getElementById('admin-form');
     const registerLink = document.getElementById('register-link');
     const backFromClient = document.getElementById('back-from-client');
     const backFromRegister = document.getElementById('back-from-register');
+    const backFromAdmin = document.getElementById('back-from-admin');
     
     // Elementos de formulario
     const clientLoginForm = document.getElementById('client-login-form');
     const clientRegisterForm = document.getElementById('client-register-form');
+    const adminLoginForm = document.getElementById('admin-login-form');
     
     // Elementos de mensajes
     const errorMessage = document.getElementById('error-message');
@@ -21,6 +24,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // API URL
     const url = "http://localhost:5000/api/usuarios/";
+
+    // Credenciales de administrador (solo para desarrollo)
+    const ADMIN_CREDENTIALS = {
+        email: "admin@movilescf.com",
+        password: "admin123" // En producción, usa una contraseña más segura
+    };
+
 
     // Función para obtener usuario por correo
     const getUsuarioPorCorreo = async (email) => {
@@ -47,21 +57,18 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Navegación entre formularios
     adminOption.addEventListener('click', function() {
-        const adminUser = {
-            id: 0,
-            nombre: "Administrador",
-            email: "admin@directo.com",
-            tipo: "admin"
-        };
-        localStorage.setItem('currentUser', JSON.stringify(adminUser));
-        window.location.href = 'index.html';
+        roleSelection.style.display = 'none';
+        adminForm.style.display = 'block';
+        clearMessages();
     });
     
     clientOption.addEventListener('click', showClientForm);
     registerLink.addEventListener('click', showRegisterForm);
     backFromClient.addEventListener('click', showRoleSelection);
     backFromRegister.addEventListener('click', showClientForm);
+    backFromAdmin.addEventListener('click', showRoleSelection);
 
+    // Event listeners para formularios
     if (clientLoginForm) {
         clientLoginForm.addEventListener('submit', handleClientLogin);
     }
@@ -70,10 +77,15 @@ document.addEventListener('DOMContentLoaded', function() {
         clientRegisterForm.addEventListener('submit', handleClientRegister);
     }
 
+    if (adminLoginForm) {
+        adminLoginForm.addEventListener('submit', handleAdminLogin);
+    }
+
     function showClientForm() {
         roleSelection.style.display = 'none';
         clientForm.style.display = 'block';
         registerForm.style.display = 'none';
+        adminForm.style.display = 'none';
         clearMessages();
     }
 
@@ -81,12 +93,14 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e) e.preventDefault();
         clientForm.style.display = 'none';
         registerForm.style.display = 'block';
+        adminForm.style.display = 'none';
         clearMessages();
     }
 
     function showRoleSelection() {
         clientForm.style.display = 'none';
         registerForm.style.display = 'none';
+        adminForm.style.display = 'none';
         roleSelection.style.display = 'flex';
         clearMessages();
     }
@@ -99,6 +113,35 @@ document.addEventListener('DOMContentLoaded', function() {
         if (successMessage) {
             successMessage.textContent = '';
             successMessage.classList.add('d-none');
+        }
+    }
+
+    // LOGIN ADMINISTRADOR
+    async function handleAdminLogin(e) {
+        e.preventDefault();
+        clearMessages();
+        
+        const email = document.getElementById('admin-email').value;
+        const password = document.getElementById('admin-password').value;
+
+        try {
+            // Verificar credenciales hardcodeadas (en producción usar API)
+            if (email === ADMIN_CREDENTIALS.email && password === ADMIN_CREDENTIALS.password) {
+                localStorage.setItem('currentUser', JSON.stringify({
+                    id: 0,
+                    nombre: "Administrador",
+                    email: ADMIN_CREDENTIALS.email,
+                    tipo: "admin"
+                }));
+
+                // Redirigir a index.html
+                window.location.href = 'index.html';
+            } else {
+                throw new Error('Credenciales de administrador incorrectas');
+            }
+        } catch (error) {
+            console.error('Admin login error:', error);
+            showError(error.message);
         }
     }
 
@@ -130,7 +173,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const usuarioData = await getUsuarioPorCorreo(email);
 
             if (usuarioData && usuarioData.id_usuario) {
-                alert(`ID del usuario ingresado: ${usuarioData.id_usuario}`);
+                console.log(`ID del usuario ingresado: ${usuarioData.id_usuario}`);
+            }
+
+            if(usuarioData && usuarioData.nombre) {
+                console.log(`Nombre del usuario ingresado: ${usuarioData.nombre}`);
             }
 
             // Guardar datos en localStorage

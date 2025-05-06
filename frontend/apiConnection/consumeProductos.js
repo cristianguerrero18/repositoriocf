@@ -35,5 +35,22 @@ export const deleteProducto = async (id) => {
       console.error("Error al eliminar producto:", error)
       throw error
     }
-  };
-  
+};
+
+export const updateProducto = async (id, producto) => {
+  try {
+      const respuesta = await fetch(`${url}${id}`, {
+          method: "PUT",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify(producto)
+      });
+      return await respuesta.json();
+  } catch (error) {
+      console.error("Error al actualizar producto:", error);
+      throw error;
+  }
+};
+
+

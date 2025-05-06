@@ -48,7 +48,7 @@ const getUsuarioPorId = async (req, res) => {
     try {
         const { id } = req.params; 
         const connection = await getConnection();
-        const result = await connection.query("SELECT id_usuario, nombre, email, telefono, cedula FROM usuarios WHERE id_usuario = ?", id);
+        const result = await connection.query("SELECT id_usuario, nombre, email, telefono, cedula, password, direccion FROM usuarios WHERE id_usuario = ?", id);
 
         if (result.length > 0) {
             res.json(result[0]); 
@@ -80,7 +80,6 @@ const deleteUsuario = async (req, res) => {
     }
   }
 
-  // Nueva función para verificar credenciales de usuario
 const loginUsuario = async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -117,12 +116,15 @@ const getUsuarioPorCorreo = async (req, res) => {
         const { email } = req.params; // Tomamos el email de la URL
         const connection = await getConnection();
         const result = await connection.query(
-            "SELECT id_usuario FROM usuarios WHERE email = ?", 
+            "SELECT id_usuario, nombre FROM usuarios WHERE email = ?", 
             [email]
         );
 
         if (result.length > 0) {
-            res.json({ id_usuario: result[0].id_usuario });
+            res.json({ 
+                id_usuario: result[0].id_usuario,
+                nombre: result[0].nombre 
+            });
         } else {
             res.status(404).json({ message: "Usuario no encontrado" });
         }
@@ -135,6 +137,48 @@ const getUsuarioPorCorreo = async (req, res) => {
     }
 };
 
+const putUsuario = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const {
+            nombre,
+            email,
+            password,
+            direccion,
+            telefono,
+            tipo,
+            cedula
+        } = req.body;
+
+        const usuario = {
+            nombre,
+            email,
+            password,
+            direccion,
+            telefono,
+            tipo,
+            cedula
+        };
+
+        const connection = await getConnection();
+        const result = await connection.query(
+            "UPDATE usuarios SET ? WHERE id_usuario = ?", 
+            [usuario, id]
+        );
+
+        if (result.affectedRows > 0) {
+            res.json({ message: "Usuario actualizado correctamente" });
+        } else {
+            res.status(404).json({ message: "Usuario no encontrado" });
+        }
+    } catch (error) {
+        console.error("Error al actualizar usuario:", error);
+        res.status(500).json({ 
+            error: "Error al actualizar usuario", 
+            details: error.message 
+        });
+    }
+};
 
 export const methodHTTP = {
     getUsuarios,
@@ -142,6 +186,9 @@ export const methodHTTP = {
     getUsuarioPorId,
     deleteUsuario,
     loginUsuario,
-    getUsuarioPorCorreo
+    getUsuarioPorCorreo,
+    putUsuario
 }
+
+
 

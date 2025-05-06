@@ -62,7 +62,72 @@ const getFacturaConCompra = async (req, res) => {
         res.status(500).json({ error: "Error al obtener detalles de la compra", details: error.message });
     }
 };
+
+const getFacturaPorUsuario = async (req, res) => {
+    try {
+        const { id_usuario } = req.params; // Tomar el id_usuario de los parámetros de la URL
+        const connection = await getConnection();
+
+        // Obtener todas las facturas relacionadas con el id_usuario
+        const facturaResult = await connection.query(`
+            SELECT f.numero_factura, f.fecha_emision, f.id_compra, u.cedula, u.nombre AS nombre_usuario
+            FROM facturas f
+            INNER JOIN compras c ON f.id_compra = c.id_compra
+            INNER JOIN usuarios u ON c.id_usuario = u.id_usuario
+            WHERE u.id_usuario = ?
+        `, id_usuario);
+
+        if (facturaResult.length === 0) {
+            return res.status(404).json({ message: "No se encontraron facturas para este usuario" });
+        }
+
+        // Obtener los detalles de cada compra asociada a las facturas
+        const facturasConDetalles = [];
+        for (const factura of facturaResult) {
+            const idCompra = factura.id_compra;
+
+            const detalleCompraResult = await connection.query(`
+                SELECT
+                    dc.id_producto,
+                    p.nombre AS nombre_producto,
+                    dc.cantidad,
+                    dc.precio_unitario,
+                    dc.subtotal
+                FROM
+                    detalle_compras dc
+                INNER JOIN
+                    productos p ON dc.id_producto = p.id_producto
+                WHERE
+                    dc.id_compra = ?
+            `, idCompra);
+
+            // Si se encuentran detalles de compra, los añadimos a la factura
+            if (detalleCompraResult.length > 0) {
+                facturasConDetalles.push({
+                    numero_factura: factura.numero_factura,
+                    fecha_emision: factura.fecha_emision,
+                    cedula_usuario: factura.cedula,
+                    nombre_usuario: factura.nombre_usuario,
+                    detalles_compra: detalleCompraResult
+                });
+            }
+        }
+
+        // Si hay facturas con detalles, respondemos con ellas
+        if (facturasConDetalles.length > 0) {
+            res.json(facturasConDetalles);
+        } else {
+            res.status(404).json({ message: "No se encontraron detalles para estas compras" });
+        }
+
+    } catch (error) {
+        console.error("Error al obtener facturas por usuario:", error);
+        res.status(500).json({ error: "Error al obtener facturas por usuario", details: error.message });
+    }
+};
+
 export const methodHTTP = {
     getFacturas ,
-    getFacturaConCompra   
+    getFacturaConCompra,
+    getFacturaPorUsuario   
 }

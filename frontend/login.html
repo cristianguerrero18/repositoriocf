@@ -36,7 +36,7 @@
     
     body {
       font-family: 'Poppins', sans-serif;
-      background-color :#3a86ff;
+      background: linear-gradient(135deg, #13547a 0%, #80d0c7 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -392,8 +392,20 @@
       #client-form {
         color: black;
       }
+
     
       #client-form input {
+        color: black !important;          /* Texto escrito */
+        background-color: white !important; /* Fondo del input */
+        border: 1px solid #ccc;
+      }
+      #admin-form input {
+        color: black !important;          /* Texto escrito */
+        background-color: white !important; /* Fondo del input */
+        border: 1px solid #ccc;
+      }
+
+      #register-form input {
         color: black !important;          /* Texto escrito */
         background-color: white !important; /* Fondo del input */
         border: 1px solid #ccc;
@@ -421,11 +433,11 @@
       <div id="role-selection">
         <div class="login-header">
           <div class="login-logo">
-            <i class="bi bi-phone" style="font-size: 40px; color: var(--primary-blue);"></i>
+            <img src="img/remove.png" alt="Logo Móviles CF" style="height: 100px;">
           </div>
           <h1 class="login-title">Bienvenido a Móviles CF</h1>
           <p class="login-subtitle">Selecciona tu tipo de acceso</p>
-        </div>
+        </div>        
         
         <div class="role-selection">
           <div class="role-card admin" id="admin-option">
@@ -442,6 +454,9 @@
             </div>
             <h4 class="role-name">Cliente</h4>
             <p class="role-desc">Compra de productos</p>
+          </div>
+          <div class="text-center mt-2">
+            <a href="cliente.html" class="text-link">Entrar como invitado</a>
           </div>
         </div>
       </div>
@@ -502,6 +517,8 @@
         <div class="text-center mt-3">
           <a href="#" class="text-link" id="register-link">¿No tienes cuenta? Regístrate aquí</a>
         </div>
+
+       
         
         <button class="btn btn-light btn-block mt-3" id="back-from-client">
           <i class="bi bi-arrow-left"></i> Volver
@@ -547,6 +564,11 @@
           <div class="form-group">
             <label for="register-cedula" class="form-label">Cédula</label>
             <input type="text" class="form-control" id="register-cedula" required placeholder="1234567890">
+          </div>
+
+          <div class="form-group">
+            <label for="register-confirm-password" class="form-label">Confirmar Contraseña</label>
+            <input type="password" class="form-control" id="register-confirm-password" required placeholder="••••••••">
           </div>
           
           <button type="submit" class="btn btn-success btn-block">Registrarse</button>

@@ -80,3 +80,53 @@ export const getUsuarioPorCorreo = async (email) => {
       throw error;
   }
 };
+export const getUsuarioPorId = async (id) => {
+    // Validación mejorada del ID
+    if (!id || isNaN(Number(id))) {
+        console.error('ID inválido recibido:', id);
+        throw new Error("ID de usuario no válido");
+    }
+
+    try {
+        const response = await fetch(`${url}${id}`);
+        
+        if (!response.ok) {
+            // Intenta obtener el mensaje de error del servidor
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Error ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error(`Error al obtener usuario ID ${id}:`, error);
+        throw error;
+    }
+};
+
+
+export const updateUsuario = async (id, usuario) => {
+    try {
+        // Validación del ID
+        if (!id || isNaN(Number(id))) {
+            throw new Error("ID de usuario no válido");
+        }
+
+        const respuesta = await fetch(`${url}${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(usuario)
+        });
+
+        if (!respuesta.ok) {
+            const errorData = await respuesta.json().catch(() => ({}));
+            throw new Error(errorData.message || `Error ${respuesta.status}`);
+        }
+
+        return await respuesta.json();
+    } catch (error) {
+        console.error(`Error al actualizar usuario ID ${id}:`, error);
+        throw error;
+    }
+};

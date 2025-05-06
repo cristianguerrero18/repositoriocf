@@ -8,6 +8,7 @@ const router = Router();
 router.get("/", productosController.getProductos);
 router.post("/", productosController.postProducto);
 router.delete("/:id", productosController.deleteProducto)
+router.put("/:id",productosController.putProducto)
 
 
 

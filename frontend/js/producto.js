@@ -1,4 +1,4 @@
-import { obtainProductos, addProducto, deleteProducto } from "../apiConnection/consumeProductos.js"
+import { obtainProductos, addProducto, deleteProducto, updateProducto } from "../apiConnection/consumeProductos.js"
 
 document.addEventListener("DOMContentLoaded", () => {
   getProductos()
@@ -65,22 +65,21 @@ function nuevoProducto() {
 
 async function getProductos() {
   try {
-    const productosObtained = await obtainProductos()
-    const container = document.querySelector("tbody")
+    const productosObtained = await obtainProductos();
+    const container = document.querySelector("#productos-body");
 
     if (!container) {
-      console.error("No se encontró el contenedor de la tabla")
-      return
+      console.error("No se encontró el contenedor de la tabla");
+      return;
     }
 
-  
-    container.innerHTML = ""
+    container.innerHTML = "";
 
     productosObtained.forEach((producto) => {
       const { id_producto, nombre, marca, modelo, descripcion, precio_unitario, stock, imagen, fecha_Creacion } =
-        producto
+        producto;
 
-      const row = document.createElement("tr")
+      const row = document.createElement("tr");
       row.innerHTML = `
                 <td>${id_producto}</td>
                 <td>${nombre}</td>
@@ -102,26 +101,44 @@ async function getProductos() {
                         Details
                     </button>
                 </td>
-                <td><button class="btn color2">Edit</button></td>
+                <td>
+                    <button class="btn color2 update-btn" 
+                        data-id="${id_producto}"
+                        data-nombre="${nombre}"
+                        data-marca="${marca}"
+                        data-modelo="${modelo}"
+                        data-descripcion="${descripcion}"
+                        data-precio="${precio_unitario}"
+                        data-stock="${stock}"
+                        data-imagen="${imagen}"
+                        data-fecha="${fecha_Creacion}">
+                        Edit
+                    </button>
+                </td>
                 <td><button class="btn color5 delete-btn" data-id="${id_producto}">Delete</button></td>
-            `
-      container.appendChild(row)
-    })
+            `;
+      container.appendChild(row);
+    });
 
-    
+    // Agregar event listeners
     document.querySelectorAll(".details-btn").forEach((button) => {
-      button.addEventListener("click", showDetails)
-    })
+      button.addEventListener("click", showDetails);
+    });
 
     document.querySelectorAll(".delete-btn").forEach((button) => {
-      button.addEventListener("click", handleDelete)
-    })
+      button.addEventListener("click", handleDelete);
+    });
+    
+    // Agregar event listener para los botones de actualización
+    document.querySelectorAll(".update-btn").forEach((button) => {
+      button.addEventListener("click", handleEditProducto);
+    });
+    
   } catch (error) {
-    console.error("Error al cargar productos:", error)
-    alert("Error al cargar los productos")
+    console.error("Error al cargar productos:", error);
+    alert("Error al cargar los productos");
   }
 }
-
 
 async function handleDelete(event) {
   const button = event.currentTarget
@@ -149,6 +166,125 @@ async function handleDelete(event) {
       alert("Ocurrió un error al eliminar el producto")
     }
   }
+}
+
+function handleEditProducto(event) {
+  const button = event.currentTarget;
+  
+  // Crear modal de edición
+  let modal = document.getElementById('edit-producto-modal');
+  if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'edit-producto-modal';
+      modal.className = 'modal';
+      document.body.appendChild(modal);
+
+      // Estilos del modal
+      modal.style.position = 'fixed';
+      modal.style.top = '50%';
+      modal.style.left = '50%';
+      modal.style.transform = 'translate(-50%, -50%)';
+      modal.style.backgroundColor = 'white';
+      modal.style.padding = '20px';
+      modal.style.boxShadow = '0 0 10px rgba(0,0,0,0.3)';
+      modal.style.zIndex = '1000';
+      modal.style.borderRadius = '8px';
+      modal.style.maxWidth = '500px';
+      modal.style.width = '90%';
+  }
+
+  // Obtener datos del producto
+  const id = button.getAttribute('data-id');
+  const nombre = button.getAttribute('data-nombre');
+  const marca = button.getAttribute('data-marca');
+  const modelo = button.getAttribute('data-modelo');
+  const descripcion = button.getAttribute('data-descripcion');
+  const precio = button.getAttribute('data-precio');
+  const stock = button.getAttribute('data-stock');
+  const imagen = button.getAttribute('data-imagen');
+
+  // Contenido del modal de edición
+  modal.innerHTML = `
+      <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+          <h3 style="margin: 0;">Editar Producto</h3>
+          <button id="close-edit-modal" style="background: none; border: none; font-size: 20px; cursor: pointer;">×</button>
+      </div>
+      <form id="edit-producto-form">
+          <input type="hidden" id="edit-id" value="${id}">
+          <div style="margin-bottom: 15px;">
+              <label for="edit-nombre" style="display: block; margin-bottom: 5px;">Nombre:</label>
+              <input type="text" id="edit-nombre" value="${nombre}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 15px;">
+              <label for="edit-marca" style="display: block; margin-bottom: 5px;">Marca:</label>
+              <input type="text" id="edit-marca" value="${marca}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 15px;">
+              <label for="edit-modelo" style="display: block; margin-bottom: 5px;">Modelo:</label>
+              <input type="text" id="edit-modelo" value="${modelo}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 15px;">
+              <label for="edit-descripcion" style="display: block; margin-bottom: 5px;">Descripción:</label>
+              <textarea id="edit-descripcion" style="width: 100%; padding: 8px; box-sizing: border-box; min-height: 80px;">${descripcion}</textarea>
+          </div>
+          <div style="margin-bottom: 15px;">
+              <label for="edit-precio" style="display: block; margin-bottom: 5px;">Precio:</label>
+              <input type="number" step="0.01" id="edit-precio" value="${precio}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 15px;">
+              <label for="edit-stock" style="display: block; margin-bottom: 5px;">Stock:</label>
+              <input type="number" id="edit-stock" value="${stock}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <div style="margin-bottom: 15px;">
+              <label for="edit-imagen" style="display: block; margin-bottom: 5px;">URL de la Imagen:</label>
+              <input type="text" id="edit-imagen" value="${imagen}" style="width: 100%; padding: 8px; box-sizing: border-box;">
+          </div>
+          <button type="submit" style="background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer;">Guardar Cambios</button>
+      </form>
+  `;
+
+  modal.style.display = 'block';
+
+  // Cerrar modal
+  document.getElementById('close-edit-modal').addEventListener('click', () => {
+      modal.style.display = 'none';
+  });
+
+  // Manejar envío del formulario
+  document.getElementById('edit-producto-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const productoActualizado = {
+          nombre: document.getElementById('edit-nombre').value,
+          marca: document.getElementById('edit-marca').value,
+          modelo: document.getElementById('edit-modelo').value,
+          descripcion: document.getElementById('edit-descripcion').value,
+          precio_unitario: parseFloat(document.getElementById('edit-precio').value),
+          stock: parseInt(document.getElementById('edit-stock').value),
+          imagen: document.getElementById('edit-imagen').value
+      };
+
+      try {
+          const respuesta = await updateProducto(id, productoActualizado);
+          
+          if (respuesta) {
+              alert("Producto actualizado correctamente");
+              modal.style.display = 'none';
+              document.querySelector("#productos-body").innerHTML = "";
+              getProductos();
+          }
+      } catch (error) {
+          console.error("Error al actualizar producto:", error);
+          alert("Error al actualizar producto: " + error.message);
+      }
+  });
+
+  // Cerrar al hacer clic fuera del modal
+  window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+          modal.style.display = 'none';
+      }
+  });
 }
 
 function showDetails(event) {

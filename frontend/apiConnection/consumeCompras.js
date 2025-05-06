@@ -1,6 +1,6 @@
 const url = "http://localhost:5000/api/compras";
 
-// Función para OBTENER compras (GET) - Ya la tienes
+
 export const obtainCompras = async () => { 
   try {
     const resultado = await fetch(url);
@@ -8,11 +8,11 @@ export const obtainCompras = async () => {
     return compras;
   } catch (error) {
     console.error("Error al obtener compras:", error);
-    throw error; // Opcional: Relanzar el error para manejarlo fuera
+    throw error; 
   }
 };
 
-// Función para ENVIAR una nueva compra (POST) - ¡Nueva!
+
 export const postCompra = async (datosCompra) => {
   try {
     const response = await fetch(url, {
@@ -20,7 +20,7 @@ export const postCompra = async (datosCompra) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(datosCompra), // Envía los datos en formato JSON
+      body: JSON.stringify(datosCompra),
     });
 
     if (!response.ok) {
@@ -28,10 +28,27 @@ export const postCompra = async (datosCompra) => {
     }
 
     const data = await response.json();
-    return data; // Retorna la respuesta del servidor (ej: { message: "Compra exitosa" })
+    return data; 
 
   } catch (error) {
     console.error("Error al enviar la compra:", error);
-    throw error; // Opcional: Relanzar el error para manejarlo en el componente
+    throw error; 
+  }
+};
+
+export const obtainComprasUsuario = async (idUsuario) => {
+  try {
+    const response = await fetch(`${url}/usuario/${idUsuario}`);
+    
+    if (!response.ok) {
+      throw new Error("Error al obtener compras del usuario");
+    }
+
+    const compras = await response.json();
+    return compras;
+
+  } catch (error) {
+    console.error(`Error al obtener compras del usuario ${idUsuario}:`, error);
+    throw error;
   }
 };

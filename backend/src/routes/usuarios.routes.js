@@ -11,6 +11,5 @@ router.get("/:id", usuariosController.getUsuarioPorId)
 router.delete("/:id", usuariosController.deleteUsuario);
 router.post("/login", usuariosController.loginUsuario);
 router.get("/correo/:email", usuariosController.getUsuarioPorCorreo);
-
-
+router.put("/:id", usuariosController.putUsuario);
 export default router;

@@ -1,18 +1,50 @@
 import { obtainProductos } from "../apiConnection/consumeProductos.js";
-import { postCompra } from "../apiConnection/consumeCompras.js";
+import { postCompra , obtainComprasUsuario } from "../apiConnection/consumeCompras.js";
+
 document.addEventListener('DOMContentLoaded', function() {
     // Verificar si hay un usuario en sesión
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    if (!currentUser || currentUser.tipo !== 'cliente') {
-        // Redirigir al login si no hay usuario o no es cliente
-        window.location.href = 'cliente.html';
-        return;
+    const logoutBtn = document.getElementById('logout-btn');
+    const userWelcome = document.querySelector('.user-welcome');
+    
+    // Mostrar u ocultar elementos según el estado de autenticación
+    if (currentUser && currentUser.tipo === 'cliente') {
+        // Mostrar nombre del usuario
+        document.getElementById('user-name').textContent = currentUser.nombre;
+        logoutBtn.style.display = 'block';
+        userWelcome.style.display = 'block';
+        
+        // Crear contenedor para botones de usuario
+        const userButtonsContainer = document.createElement('div');
+        userButtonsContainer.className = 'd-flex align-items-center';
+        
+        // Botón de historial de compras
+        const historyBtn = document.createElement('button');
+        historyBtn.className = 'btn btn-outline-light btn-sm me-2';
+        historyBtn.innerHTML = '<i class="bi bi-person-circle"></i> Mi perfil';
+
+        historyBtn.id = 'history-btn';
+        
+        // Agregar botones al contenedor
+        userButtonsContainer.appendChild(historyBtn);
+        userButtonsContainer.appendChild(logoutBtn.cloneNode(true)); // Clonamos el botón
+        
+        // Reemplazar el logoutBtn original con el contenedor
+        logoutBtn.replaceWith(userButtonsContainer);
+        
+        // Event listener para el botón de historial
+        historyBtn.addEventListener('click', () => {
+            window.location.href = 'historial-compras.html';
+        });
+        
+        // Actualizar el event listener del logout (ya que es un nuevo elemento)
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('cart');
+            window.location.href = 'login.html';
+        });
     }
-
-    // Mostrar nombre del usuario
-    document.getElementById('user-name').textContent = currentUser.nombre;
-
-    // Cargar productos
+    // Cargar productos (siempre se cargan, independientemente del login)
     loadProducts();
 
     // Inicializar carrito desde localStorage
@@ -153,6 +185,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function addToCart(productId, quantity) {
+        // Verificar si el usuario está logueado
+        if (!currentUser) {
+            alert('Por favor inicia sesión para agregar productos al carrito');
+            window.location.href = 'login.html';
+            return;
+        }
+
         if (quantity <= 0) {
             alert('Por favor, selecciona una cantidad válida');
             return;
@@ -356,6 +395,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showCheckoutModal() {
+        if (!currentUser) {
+            alert('Por favor inicia sesión para realizar una compra');
+            window.location.href = 'login.html';
+            return;
+        }
+
         const checkoutItems = document.getElementById('checkout-items');
         const checkoutTotal = document.getElementById('checkout-total');
         
@@ -380,11 +425,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const modal = new bootstrap.Modal(document.getElementById('checkout-modal'));
         modal.show();
-
     }
-
-async function processCheckout() {
-     
+    
+    async function processCheckout() {
         const currentUser = JSON.parse(localStorage.getItem('currentUser'));
         console.log("Usuario actual desde localStorage:", currentUser);
     
@@ -444,5 +487,4 @@ async function processCheckout() {
             alert('Error al procesar la compra. Por favor, intenta de nuevo.');
         }
     }
-    
 });
